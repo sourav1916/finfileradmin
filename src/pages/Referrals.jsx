@@ -170,17 +170,7 @@ const ViewReferralModal = ({ referral, onClose, onEdit }) => (
       </h4>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
         <InfoItem icon={Users} label="Referrer Bonus" value={`${referral.referrer_bonus_amount} (${referral.referrer_bonus_type})`} />
-        <InfoItem
-          icon={CheckCircle}
-          label="Referrer Bonus Status"
-          value={<BonusStatusBadge status={referral.referrer_bonus_status} />}
-        />
-        <InfoItem icon={Users} label="Referee Bonus" value={`${referral.referee_bonus_amount} (${referral.referee_bonus_type})`} />
-        <InfoItem
-          icon={CheckCircle}
-          label="Referee Bonus Status"
-          value={<BonusStatusBadge status={referral.referee_bonus_status} />}
-        />
+        <InfoItem icon={Users} label="Onwards Years Bonus" value={referral.onwords_years_bonus_value} />
       </div>
     </div>
 
@@ -203,10 +193,7 @@ const ReferralFormModal = ({ referral, onClose, onSubmit, isSubmitting }) => {
     offer_name_snapshot: referral?.offer_name_snapshot || '',
     referrer_bonus_type: referral?.referrer_bonus_type || 'fixed',
     referrer_bonus_amount: referral?.referrer_bonus_amount ?? '',
-    referee_bonus_type: referral?.referee_bonus_type || 'fixed',
-    referee_bonus_amount: referral?.referee_bonus_amount ?? '',
-    referrer_bonus_status: referral?.referrer_bonus_status === 1 || referral?.referrer_bonus_status === '1' || referral?.referrer_bonus_status === true || referral?.referrer_bonus_status === 'true',
-    referee_bonus_status: referral?.referee_bonus_status === 1 || referral?.referee_bonus_status === '1' || referral?.referee_bonus_status === true || referral?.referee_bonus_status === 'true',
+    onwords_years_bonus_value: referral?.onwords_years_bonus_value ?? '',
     status: referral?.status === 1 || referral?.status === '1' || referral?.status === true || referral?.status === 'true',
   });
 
@@ -226,20 +213,20 @@ const ReferralFormModal = ({ referral, onClose, onSubmit, isSubmitting }) => {
       const {
         referrer_username, referred_username, refer_offer_id, referral_code_used,
         offer_name_snapshot, referrer_bonus_type, referrer_bonus_amount,
-        referee_bonus_type, referee_bonus_amount,
+        onwords_years_bonus_value,
       } = form;
       onSubmit({
         referrer_username, referred_username, refer_offer_id: refer_offer_id || null,
         referral_code_used, offer_name_snapshot, referrer_bonus_type,
         referrer_bonus_amount: Number(referrer_bonus_amount) || 0,
-        referee_bonus_type, referee_bonus_amount: Number(referee_bonus_amount) || 0,
+        onwords_years_bonus_value: Number(onwords_years_bonus_value) || 0,
       });
     } else {
       onSubmit({
         ...form,
         refer_offer_id: form.refer_offer_id || null,
         referrer_bonus_amount: Number(form.referrer_bonus_amount) || 0,
-        referee_bonus_amount: Number(form.referee_bonus_amount) || 0,
+        onwords_years_bonus_value: Number(form.onwords_years_bonus_value) || 0,
       });
     }
   };
@@ -339,8 +326,6 @@ const ReferralFormModal = ({ referral, onClose, onSubmit, isSubmitting }) => {
                   update('offer_name_snapshot', selected.offer_name || '');
                   update('referrer_bonus_type', selected.referrer_bonus_type || 'fixed');
                   update('referrer_bonus_amount', selected.referrer_bonus_value || 0);
-                  update('referee_bonus_type', selected.referee_bonus_type || 'fixed');
-                  update('referee_bonus_amount', selected.referee_bonus_value || 0);
                 }
               }}
               placeholder="Choose offer..."
@@ -349,7 +334,6 @@ const ReferralFormModal = ({ referral, onClose, onSubmit, isSubmitting }) => {
               <div className="mt-2 p-2 bg-gray-50 dark:bg-gray-800 rounded-lg text-[11px] text-gray-600 dark:text-gray-400 border border-gray-100 dark:border-gray-700">
                 <div className="font-medium text-gray-700 dark:text-gray-300 mb-1">{offerObj.offer_name}</div>
                 <div>Referrer Bonus: {offerObj.referrer_bonus_value} ({offerObj.referrer_bonus_type})</div>
-                <div>Referee Bonus: {offerObj.referee_bonus_value} ({offerObj.referee_bonus_type})</div>
               </div>
             )}
           </div>
@@ -384,45 +368,14 @@ const ReferralFormModal = ({ referral, onClose, onSubmit, isSubmitting }) => {
               <label className={labelClass}>Bonus Amount</label>
               <input type="number" className={inputClass} value={form.referrer_bonus_amount} onChange={(e) => update('referrer_bonus_amount', e.target.value)} placeholder="0" />
             </div>
-            {!isEdit && (
-              <div>
-                <label className={labelClass}>Bonus Status</label>
-                <SelectField
-                  value={BONUS_STATUS_OPTIONS.find((o) => o.value === form.referrer_bonus_status)}
-                  onChange={(s) => update('referrer_bonus_status', s ? s.value : false)}
-                  options={BONUS_STATUS_OPTIONS}
-                  styles={filterSelectStyles}
-                />
-              </div>
-            )}
           </div>
 
           <div className="rounded-lg border border-gray-200 dark:border-gray-700 p-3 space-y-3">
             <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Referred User</p>
             <div>
-              <label className={labelClass}>Bonus Type</label>
-              <SelectField
-                value={BONUS_TYPE_OPTIONS.find((o) => o.value === form.referee_bonus_type)}
-                onChange={(s) => update('referee_bonus_type', s?.value || 'fixed')}
-                options={BONUS_TYPE_OPTIONS}
-                styles={filterSelectStyles}
-              />
+              <label className={labelClass}>Onwards Years Bonus Value</label>
+              <input type="number" className={inputClass} value={form.onwords_years_bonus_value} onChange={(e) => update('onwords_years_bonus_value', e.target.value)} placeholder="0" />
             </div>
-            <div>
-              <label className={labelClass}>Bonus Amount</label>
-              <input type="number" className={inputClass} value={form.referee_bonus_amount} onChange={(e) => update('referee_bonus_amount', e.target.value)} placeholder="0" />
-            </div>
-            {!isEdit && (
-              <div>
-                <label className={labelClass}>Bonus Status</label>
-                <SelectField
-                  value={BONUS_STATUS_OPTIONS.find((o) => o.value === form.referee_bonus_status)}
-                  onChange={(s) => update('referee_bonus_status', s ? s.value : false)}
-                  options={BONUS_STATUS_OPTIONS}
-                  styles={filterSelectStyles}
-                />
-              </div>
-            )}
           </div>
         </div>
       </div>
@@ -441,7 +394,7 @@ const ReferralFormModal = ({ referral, onClose, onSubmit, isSubmitting }) => {
 
       {isEdit && (
         <p className="text-xs text-gray-400 dark:text-gray-500 italic">
-          Status and bonus statuses are managed separately via the "Update Status" action.
+          Status is managed separately via the "Update Status" action.
         </p>
       )}
     </Modal>
@@ -452,8 +405,6 @@ const ReferralFormModal = ({ referral, onClose, onSubmit, isSubmitting }) => {
 
 const UpdateStatusModal = ({ referral, onClose, onSubmit, isSubmitting }) => {
   const [status, setStatus] = useState(referral.status === 1 || referral.status === '1' || referral.status === true || referral.status === 'true');
-  const [referrerBonusStatus, setReferrerBonusStatus] = useState(referral.referrer_bonus_status === 1 || referral.referrer_bonus_status === '1' || referral.referrer_bonus_status === true || referral.referrer_bonus_status === 'true');
-  const [refereeBonusStatus, setRefereeBonusStatus] = useState(referral.referee_bonus_status === 1 || referral.referee_bonus_status === '1' || referral.referee_bonus_status === true || referral.referee_bonus_status === 'true');
 
   return (
     <Modal
@@ -461,7 +412,7 @@ const UpdateStatusModal = ({ referral, onClose, onSubmit, isSubmitting }) => {
       onClose={onClose}
       title="Update Referral Status"
       icon={RefreshCcw}
-      size="lg"
+      size="sm"
       contentClassName="p-5 space-y-4"
       footer={
         <div className="flex justify-end gap-2 w-full">
@@ -469,7 +420,7 @@ const UpdateStatusModal = ({ referral, onClose, onSubmit, isSubmitting }) => {
             Cancel
           </button>
           <button
-            onClick={() => onSubmit({ status, referrer_bonus_status: referrerBonusStatus, referee_bonus_status: refereeBonusStatus })}
+            onClick={() => onSubmit({ status })}
             disabled={isSubmitting}
             className="px-5 py-2.5 rounded-lg bg-indigo-600 dark:bg-indigo-500 text-white text-sm font-semibold hover:bg-indigo-700 dark:hover:bg-indigo-600 transition-all disabled:opacity-60"
           >
@@ -484,14 +435,6 @@ const UpdateStatusModal = ({ referral, onClose, onSubmit, isSubmitting }) => {
       <div>
         <label className={labelClass}>Overall Status</label>
         <SelectField value={STATUS_OPTIONS.find((o) => o.value === status)} onChange={(s) => setStatus(s ? s.value : false)} options={STATUS_OPTIONS} styles={filterSelectStyles} />
-      </div>
-      <div>
-        <label className={labelClass}>Referrer Bonus Status</label>
-        <SelectField value={BONUS_STATUS_OPTIONS.find((o) => o.value === referrerBonusStatus)} onChange={(s) => setReferrerBonusStatus(s ? s.value : false)} options={BONUS_STATUS_OPTIONS} styles={filterSelectStyles} />
-      </div>
-      <div>
-        <label className={labelClass}>Referee Bonus Status</label>
-        <SelectField value={BONUS_STATUS_OPTIONS.find((o) => o.value === refereeBonusStatus)} onChange={(s) => setRefereeBonusStatus(s ? s.value : false)} options={BONUS_STATUS_OPTIONS} styles={filterSelectStyles} />
       </div>
     </Modal>
   );
@@ -532,8 +475,8 @@ const DeleteConfirmModal = ({ referral, onClose, onConfirm, isSubmitting }) => (
 
 // ─── Active Filter Pills ──────────────────────────────────────────────────────
 
-const ActiveFilters = ({ searchTerm, statusFilter, referrerBonusFilter, refereeBonusFilter, onClearSearch, onClearStatus, onClearReferrerBonus, onClearRefereeBonus, onClearAll }) => {
-  const hasFilters = searchTerm || statusFilter !== '' || referrerBonusFilter !== '' || refereeBonusFilter !== '';
+const ActiveFilters = ({ searchTerm, statusFilter, onClearSearch, onClearStatus, onClearAll }) => {
+  const hasFilters = searchTerm || statusFilter !== '';
   if (!hasFilters) return null;
 
   return (
@@ -549,18 +492,6 @@ const ActiveFilters = ({ searchTerm, statusFilter, referrerBonusFilter, refereeB
         <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800/50 text-xs font-medium text-blue-700 dark:text-blue-400 capitalize">
           Status: {statusFilter ? 'Active' : 'Inactive'}
           <button onClick={onClearStatus} className="ml-0.5 hover:text-blue-900 dark:hover:text-blue-200"><X size={11} /></button>
-        </span>
-      )}
-      {referrerBonusFilter !== '' && (
-        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800/50 text-xs font-medium text-purple-700 dark:text-purple-400 capitalize">
-          Referrer Bonus: {referrerBonusFilter ? 'Active' : 'Inactive'}
-          <button onClick={onClearReferrerBonus} className="ml-0.5 hover:text-purple-900 dark:hover:text-purple-200"><X size={11} /></button>
-        </span>
-      )}
-      {refereeBonusFilter !== '' && (
-        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-teal-50 dark:bg-teal-900/20 border border-teal-200 dark:border-teal-800/50 text-xs font-medium text-teal-700 dark:text-teal-400 capitalize">
-          Referee Bonus: {refereeBonusFilter ? 'Active' : 'Inactive'}
-          <button onClick={onClearRefereeBonus} className="ml-0.5 hover:text-teal-900 dark:hover:text-teal-200"><X size={11} /></button>
         </span>
       )}
       <button onClick={onClearAll} className="text-xs text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400 underline underline-offset-2 transition-colors">
@@ -700,8 +631,6 @@ export default function Referrals() {
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
-  const [referrerBonusFilter, setReferrerBonusFilter] = useState('');
-  const [refereeBonusFilter, setRefereeBonusFilter] = useState('');
 
   // Modals
   const [selectedReferral, setSelectedReferral] = useState(null);
@@ -728,10 +657,9 @@ export default function Referrals() {
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
-  // Reset to page 1 when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [statusFilter, referrerBonusFilter, refereeBonusFilter]);
+  }, [statusFilter]);
 
   // ─── Fetch ──────────────────────────────────────────────────────────────────
 
@@ -742,8 +670,6 @@ export default function Referrals() {
     });
     if (debouncedSearch) params.set('search', debouncedSearch);
     if (statusFilter !== '') params.set('status', statusFilter);
-    if (referrerBonusFilter !== '') params.set('referrer_bonus_status', referrerBonusFilter);
-    if (refereeBonusFilter !== '') params.set('referee_bonus_status', refereeBonusFilter);
 
     const requestKey = params.toString();
     if (activeFetchRef.current === requestKey) {
@@ -771,7 +697,7 @@ export default function Referrals() {
       setRefreshing(false);
       if (activeFetchRef.current === requestKey) activeFetchRef.current = null;
     }
-  }, [currentPage, itemsPerPage, debouncedSearch, statusFilter, referrerBonusFilter, refereeBonusFilter]);
+  }, [currentPage, itemsPerPage, debouncedSearch, statusFilter]);
 
   useEffect(() => {
     fetchReferrals();
@@ -850,12 +776,10 @@ export default function Referrals() {
   const clearAllFilters = () => {
     setSearchTerm('');
     setStatusFilter('');
-    setReferrerBonusFilter('');
-    setRefereeBonusFilter('');
     setCurrentPage(1);
   };
 
-  const hasActiveFilters = debouncedSearch || statusFilter !== '' || referrerBonusFilter !== '' || refereeBonusFilter !== '';
+  const hasActiveFilters = debouncedSearch || statusFilter !== '';
 
   // ─── Table Columns ───────────────────────────────────────────────────────────
 
@@ -897,18 +821,12 @@ export default function Referrals() {
     { key: 'offer', label: 'Offer', render: (row) => <span className="text-xs whitespace-nowrap text-gray-600 dark:text-gray-300 max-w-[140px] truncate block">{row.offer_name_snapshot || 'N/A'}</span> },
     {
       key: 'referrer_bonus', label: 'Referrer Bonus', render: (row) => (
-        <div className="flex flex-col gap-1">
-          <span className="text-xs whitespace-nowrap text-gray-700 dark:text-gray-200 font-medium">{row.referrer_bonus_amount} ({row.referrer_bonus_type})</span>
-          <BonusStatusBadge status={row.referrer_bonus_status} />
-        </div>
+        <span className="text-xs whitespace-nowrap text-gray-700 dark:text-gray-200 font-medium">{row.referrer_bonus_amount} ({row.referrer_bonus_type})</span>
       ),
     },
     {
-      key: 'referee_bonus', label: 'Referee Bonus', render: (row) => (
-        <div className="flex flex-col gap-1">
-          <span className="text-xs whitespace-nowrap text-gray-700 dark:text-gray-200 font-medium">{row.referee_bonus_amount} ({row.referee_bonus_type})</span>
-          <BonusStatusBadge status={row.referee_bonus_status} />
-        </div>
+      key: 'onwords_years_bonus', label: 'Onwards Years Bonus', render: (row) => (
+        <span className="text-xs whitespace-nowrap text-gray-700 dark:text-gray-200 font-medium">{row.onwords_years_bonus_value}</span>
       ),
     },
     { key: 'referred_date', label: 'Referred Date', render: (row) => <span className="text-xs whitespace-nowrap text-gray-500 dark:text-gray-400">{formatDate(row.referred_date)}</span> },
@@ -975,30 +893,6 @@ export default function Referrals() {
                 />
               </div>
 
-              {/* Referrer bonus filter */}
-              <div className="min-w-[190px] w-full md:w-auto">
-                <SelectField
-                  value={BONUS_STATUS_OPTIONS.find((option) => option.value === referrerBonusFilter) || null}
-                  onChange={(selected) => setReferrerBonusFilter(selected ? selected.value : '')}
-                  options={BONUS_STATUS_OPTIONS}
-                  placeholder="Referrer Bonus"
-                  isClearable
-                  styles={filterSelectStyles}
-                />
-              </div>
-
-              {/* Referee bonus filter */}
-              <div className="min-w-[190px] w-full md:w-auto">
-                <SelectField
-                  value={BONUS_STATUS_OPTIONS.find((option) => option.value === refereeBonusFilter) || null}
-                  onChange={(selected) => setRefereeBonusFilter(selected ? selected.value : '')}
-                  options={BONUS_STATUS_OPTIONS}
-                  placeholder="Referee Bonus"
-                  isClearable
-                  styles={filterSelectStyles}
-                />
-              </div>
-
               {/* Divider */}
               <div className="h-6 w-px bg-gray-200 dark:bg-gray-700 hidden sm:block" />
 
@@ -1013,12 +907,8 @@ export default function Referrals() {
           <ActiveFilters
             searchTerm={debouncedSearch}
             statusFilter={statusFilter}
-            referrerBonusFilter={referrerBonusFilter}
-            refereeBonusFilter={refereeBonusFilter}
             onClearSearch={() => setSearchTerm('')}
             onClearStatus={() => setStatusFilter('')}
-            onClearReferrerBonus={() => setReferrerBonusFilter('')}
-            onClearRefereeBonus={() => setRefereeBonusFilter('')}
             onClearAll={clearAllFilters}
           />
         </motion.div>

@@ -2,7 +2,8 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Gift, Plus, CheckCircle, XCircle,
-  Search, X, Edit, Trash2, Calendar, Eye
+  Search, X, Edit, Trash2, Calendar, Eye,
+  Tag, Clock, IndianRupee, Percent
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import ManagementHub from '../components/common/ManagementHub';
@@ -26,6 +27,33 @@ const StatusBadge = ({ status }) => {
       {isActive ? <CheckCircle size={10} /> : <XCircle size={10} />}
       {isActive ? 'Active' : 'Inactive'}
     </span>
+  );
+};
+
+const SummaryCard = ({ icon: Icon, label, value, tone = "default" }) => {
+  const toneClasses = {
+    default: "bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 border-indigo-100 dark:border-indigo-800",
+    emerald: "bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 border-emerald-100 dark:border-emerald-800",
+    amber: "bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 border-amber-100 dark:border-amber-800",
+  };
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="flex items-center gap-4 rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-800/50 p-4 shadow-sm"
+    >
+      <span
+        className={`flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl border ${toneClasses[tone] || toneClasses.default}`}
+      >
+        <Icon size={22} />
+      </span>
+      <div className="min-w-0">
+        <p className="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">{label}</p>
+        <p className="truncate text-xl font-bold tabular-nums text-gray-900 dark:text-gray-100">
+          {value}
+        </p>
+      </div>
+    </motion.div>
   );
 };
 
@@ -74,8 +102,9 @@ const formatDateForInput = (value) => {
 
 const ViewOfferModal = ({ offer, onClose, onEdit }) => {
   const formatBonus = (type, value) => {
-      if (type === 'percentage') return `${value}%`;
-      return `₹${value}`;
+      const typeLabel = type ? ` (${type})` : '';
+      if (type === 'percentage') return `${value}%${typeLabel}`;
+      return `₹${value}${typeLabel}`;
   };
 
   return (
@@ -95,9 +124,11 @@ const ViewOfferModal = ({ offer, onClose, onEdit }) => {
       <div className="flex items-start justify-between pb-4 border-b border-gray-100 dark:border-gray-700">
         <div>
           <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100">{offer.offer_name}</h3>
-          <div className="mt-1.5 inline-block text-sm text-emerald-700 dark:text-emerald-400 font-mono font-bold bg-emerald-50 dark:bg-emerald-900/30 px-2.5 py-1 rounded-md border border-emerald-100 dark:border-emerald-800/50">
-            {offer.offer_code}
-          </div>
+          {offer.offer_code && (
+            <div className="mt-1.5 inline-block text-sm text-emerald-700 dark:text-emerald-400 font-mono font-bold bg-emerald-50 dark:bg-emerald-900/30 px-2.5 py-1 rounded-md border border-emerald-100 dark:border-emerald-800/50">
+              {offer.offer_code}
+            </div>
+          )}
         </div>
         <StatusBadge status={offer.status} />
       </div>
@@ -108,19 +139,8 @@ const ViewOfferModal = ({ offer, onClose, onEdit }) => {
           <p className="text-lg font-bold text-gray-800 dark:text-gray-100">{formatBonus(offer.referrer_bonus_type, offer.referrer_bonus_value)}</p>
         </div>
         <div className="p-4 rounded-xl border border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
-          <p className="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1">Referee Bonus</p>
-          <p className="text-lg font-bold text-gray-800 dark:text-gray-100">{formatBonus(offer.referee_bonus_type, offer.referee_bonus_value)}</p>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-        <div className="flex flex-col gap-1">
-          <span className="text-xs font-medium text-gray-500 dark:text-gray-400">Max Bonus Amount</span>
-          <span className="text-gray-800 dark:text-gray-200 font-medium">{offer.max_bonus_amount ? `₹${offer.max_bonus_amount}` : 'N/A'}</span>
-        </div>
-        <div className="flex flex-col gap-1">
-          <span className="text-xs font-medium text-gray-500 dark:text-gray-400">Min Order Amount</span>
-          <span className="text-gray-800 dark:text-gray-200 font-medium">{offer.min_order_amount ? `₹${offer.min_order_amount}` : 'N/A'}</span>
+          <p className="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1">Targets</p>
+          <p className="text-lg font-bold text-gray-800 dark:text-gray-100">{offer.targets}</p>
         </div>
       </div>
 
@@ -151,13 +171,9 @@ const ReferOfferFormModal = ({ offer, onClose, onSubmit, isSubmitting }) => {
   const isEdit = !!offer;
   const [form, setForm] = useState({
     offer_name: offer?.offer_name || '',
-    offer_code: offer?.offer_code || '',
     referrer_bonus_type: offer?.referrer_bonus_type || 'fixed',
     referrer_bonus_value: offer?.referrer_bonus_value || '',
-    referee_bonus_type: offer?.referee_bonus_type || 'fixed',
-    referee_bonus_value: offer?.referee_bonus_value || '',
-    max_bonus_amount: offer?.max_bonus_amount || '',
-    min_order_amount: offer?.min_order_amount || '',
+    targets: offer?.targets || 1,
     effective_from: formatDateForInput(offer?.effective_from),
     effective_to: formatDateForInput(offer?.effective_to),
     description: offer?.description || '',
@@ -182,10 +198,7 @@ const ReferOfferFormModal = ({ offer, onClose, onSubmit, isSubmitting }) => {
     
     // Convert numbers
     payload.referrer_bonus_value = payload.referrer_bonus_value ? Number(payload.referrer_bonus_value) : 0;
-    payload.referee_bonus_value = payload.referee_bonus_value ? Number(payload.referee_bonus_value) : 0;
-    
-    payload.max_bonus_amount = payload.max_bonus_amount ? Number(payload.max_bonus_amount) : null;
-    payload.min_order_amount = payload.min_order_amount ? Number(payload.min_order_amount) : null;
+    payload.targets = payload.targets ? Number(payload.targets) : 1;
     
     // Convert empty date to null
     if (!payload.effective_to) payload.effective_to = null;
@@ -227,10 +240,6 @@ const ReferOfferFormModal = ({ offer, onClose, onSubmit, isSubmitting }) => {
                 <input required name="offer_name" value={form.offer_name} onChange={handleChange} placeholder="e.g. Refer & Earn ₹100" className={inputCls} />
             </div>
             
-            <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1.5">Offer Code *</label>
-                <input required name="offer_code" value={form.offer_code} onChange={handleChange} placeholder="e.g. SUMMER24" className={inputCls} />
-            </div>
             <div className="flex flex-col justify-end">
                  <div className="flex items-center gap-3 py-2.5">
                     <input
@@ -246,7 +255,7 @@ const ReferOfferFormModal = ({ offer, onClose, onSubmit, isSubmitting }) => {
             </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-gray-200 dark:border-gray-700 relative z-20">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2 border-t border-gray-200 dark:border-gray-700 relative z-20">
             <div>
                 <label className="block text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1.5">Referrer Bonus Type</label>
                 <SelectField
@@ -260,43 +269,51 @@ const ReferOfferFormModal = ({ offer, onClose, onSubmit, isSubmitting }) => {
                 <label className="block text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1.5">Referrer Bonus Value *</label>
                 <input type="number" step="0.01" min="0" required name="referrer_bonus_value" value={form.referrer_bonus_value} onChange={handleChange} placeholder="0.00" className={inputCls} />
             </div>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 relative z-10">
-            <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1.5">Referee Bonus Type</label>
-                <SelectField
-                    options={[{ value: 'fixed', label: 'Fixed Amount (₹)' }, { value: 'percentage', label: 'Percentage (%)' }]}
-                    value={[{ value: 'fixed', label: 'Fixed Amount (₹)' }, { value: 'percentage', label: 'Percentage (%)' }].find(o => o.value === form.referee_bonus_type) || { value: 'fixed', label: 'Fixed Amount (₹)' }}
-                    onChange={handleSelectChange('referee_bonus_type')}
-                    isClearable={false}
-                />
-            </div>
              <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1.5">Referee Bonus Value *</label>
-                <input type="number" step="0.01" min="0" required name="referee_bonus_value" value={form.referee_bonus_value} onChange={handleChange} placeholder="0.00" className={inputCls} />
-            </div>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-             <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1.5">Max Bonus Amount</label>
-                <input type="number" step="0.01" min="0" name="max_bonus_amount" value={form.max_bonus_amount} onChange={handleChange} placeholder="e.g. 500 (Optional)" className={inputCls} />
-            </div>
-             <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1.5">Min Order Amount</label>
-                <input type="number" step="0.01" min="0" name="min_order_amount" value={form.min_order_amount} onChange={handleChange} placeholder="e.g. 1000 (Optional)" className={inputCls} />
+                <label className="block text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1.5">Targets *</label>
+                <input type="number" step="1" min="1" required name="targets" value={form.targets} onChange={handleChange} placeholder="1" className={inputCls} />
             </div>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-gray-200 dark:border-gray-700">
              <div>
                 <label className="block text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1.5">Effective From *</label>
-                <input type="datetime-local" required name="effective_from" value={form.effective_from} onChange={handleChange} className={inputCls} />
+                <input 
+                    type={form.effective_from ? "datetime-local" : "text"}
+                    onFocus={(e) => { e.target.type = "datetime-local"; }}
+                    onBlur={(e) => { if (!e.target.value) e.target.type = "text"; }}
+                    required 
+                    name="effective_from" 
+                    value={form.effective_from} 
+                    onChange={handleChange} 
+                    placeholder="Select Start Date"
+                    className={inputCls} 
+                />
             </div>
              <div>
                 <label className="block text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1.5">Effective To</label>
-                <input type="datetime-local" name="effective_to" value={form.effective_to} onChange={handleChange} className={inputCls} />
+                <div className="relative">
+                    <input 
+                        type={form.effective_to ? "datetime-local" : "text"}
+                        onFocus={(e) => { e.target.type = "datetime-local"; }}
+                        onBlur={(e) => { if (!e.target.value) e.target.type = "text"; }}
+                        name="effective_to" 
+                        value={form.effective_to} 
+                        onChange={handleChange} 
+                        placeholder="Leave empty for no expiry"
+                        className={inputCls} 
+                    />
+                    {form.effective_to && (
+                        <button
+                            type="button"
+                            onClick={() => setForm(prev => ({ ...prev, effective_to: '' }))}
+                            className="absolute right-10 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 p-1 bg-gray-50 dark:bg-gray-900 rounded-md"
+                            title="Clear date"
+                        >
+                            <X size={14} />
+                        </button>
+                    )}
+                </div>
                 <p className="text-[10px] text-gray-500 mt-1">Leave empty for no expiry</p>
             </div>
         </div>
@@ -463,27 +480,44 @@ export default function ReferOffers() {
   // ─── Table Columns ───────────────────────────────────────────────────────────
 
   const formatBonus = (type, value) => {
-      if (type === 'percentage') return `${value}%`;
-      return `₹${value}`;
+      const typeLabel = type ? ` (${type})` : '';
+      if (type === 'percentage') return `${value}%${typeLabel}`;
+      return `₹${value}${typeLabel}`;
   }
 
   const tableColumns = [
     {
       key: 'name', label: 'Offer', render: (row) => (
-        <div>
-            <div className="font-semibold text-gray-800 dark:text-gray-100 text-sm whitespace-nowrap">{row.offer_name}</div>
-            <div className="text-[11px] text-emerald-600 dark:text-emerald-400 font-mono font-medium tracking-wide bg-emerald-50 dark:bg-emerald-900/30 px-1.5 py-0.5 rounded inline-block mt-0.5 border border-emerald-100 dark:border-emerald-800/50">
-                {row.offer_code}
+        <div className="flex items-center gap-3">
+            <div className="flex-shrink-0 h-10 w-10 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-xl flex items-center justify-center">
+                <Gift size={18} />
+            </div>
+            <div>
+                <div className="font-bold text-gray-900 dark:text-gray-100 text-sm whitespace-nowrap">{row.offer_name}</div>
+                {row.offer_code && (
+                  <div className="flex items-center gap-1 text-[11px] text-emerald-600 dark:text-emerald-400 font-mono font-bold tracking-wide bg-emerald-50 dark:bg-emerald-900/30 px-1.5 py-0.5 rounded mt-1 border border-emerald-100 dark:border-emerald-800/50 w-fit">
+                      <Tag size={10} /> {row.offer_code}
+                  </div>
+                )}
             </div>
         </div>
       ),
     },
-    { key: 'referrer_bonus', label: 'Referrer Bonus', render: (row) => <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{formatBonus(row.referrer_bonus_type, row.referrer_bonus_value)}</span> },
-    { key: 'referee_bonus', label: 'Referee Bonus', render: (row) => <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{formatBonus(row.referee_bonus_type, row.referee_bonus_value)}</span> },
+    { key: 'referrer_bonus', label: 'Referrer Bonus', render: (row) => (
+        <div className="flex items-center gap-2">
+            <span className={`flex h-7 w-7 items-center justify-center rounded-lg border ${row.referrer_bonus_type === 'percentage' ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 border-indigo-100 dark:border-indigo-800' : 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 border-emerald-100 dark:border-emerald-800'}`}>
+                {row.referrer_bonus_type === 'percentage' ? <Percent size={12} /> : <IndianRupee size={12} />}
+            </span>
+            <span className="text-sm font-bold text-gray-800 dark:text-gray-200">
+                {row.referrer_bonus_type === 'percentage' ? `${row.referrer_bonus_value}%` : `₹${row.referrer_bonus_value}`}
+            </span>
+        </div>
+    )},
+    { key: 'targets', label: 'Targets', render: (row) => <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{row.targets || 1}</span> },
     { key: 'dates', label: 'Validity', render: (row) => (
-        <div className="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">
-            <div>From: <span className="font-medium text-gray-700 dark:text-gray-300">{formatDateTime(row.effective_from)}</span></div>
-            <div className="mt-0.5">To: <span className="font-medium text-gray-700 dark:text-gray-300">{row.effective_to ? formatDateTime(row.effective_to) : 'No Expiry'}</span></div>
+        <div className="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap space-y-1">
+            <div className="flex items-center gap-1.5"><Calendar size={12} className="text-gray-400" /> <span className="font-medium text-gray-700 dark:text-gray-300">{formatDateTime(row.effective_from)}</span></div>
+            <div className="flex items-center gap-1.5"><Clock size={12} className="text-gray-400" /> <span className="font-medium text-gray-700 dark:text-gray-300">{row.effective_to ? formatDateTime(row.effective_to) : 'No Expiry'}</span></div>
         </div>
     )},
     { key: 'status', label: 'Status', render: (row) => <StatusBadge status={row.status} /> },
@@ -503,6 +537,15 @@ export default function ReferOffers() {
       }
     >
       <div className="space-y-3 mt-2">
+        {/* Summary Cards */}
+        {!loading && (
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <SummaryCard icon={Gift} label="Total Offers" value={totalOffers} tone="default" />
+            <SummaryCard icon={CheckCircle2} label="Active Offers" value={offers.filter(o => o.status === 1 || o.status === true).length} tone="emerald" />
+            <SummaryCard icon={Clock} label="Inactive Offers" value={offers.filter(o => o.status === 0 || o.status === false).length} tone="amber" />
+          </div>
+        )}
+
         {/* Filters Bar */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
