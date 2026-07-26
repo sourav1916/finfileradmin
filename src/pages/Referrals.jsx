@@ -570,9 +570,128 @@ const ActiveFilters = ({ searchTerm, statusFilter, referrerBonusFilter, refereeB
   );
 };
 
+// ─── Incomplete Targets Component ─────────────────────────────────────────────
+
+const IncompleteTargets = () => {
+  const [targets, setTargets] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [totalTargets, setTotalTargets] = useState(0);
+
+  const lastFetchRef = useRef(null);
+  const activeFetchRef = useRef(null);
+
+  const fetchTargets = useCallback(async ({ silent = false, force = false } = {}) => {
+    const params = new URLSearchParams({
+      page_no: currentPage,
+      limit: itemsPerPage,
+    });
+
+    const requestKey = params.toString();
+    if (activeFetchRef.current === requestKey) {
+      setRefreshing(false);
+      return;
+    }
+    if (!force && lastFetchRef.current === requestKey) return;
+
+    activeFetchRef.current = requestKey;
+    silent ? setRefreshing(true) : setLoading(true);
+    try {
+      const response = await apiCall(`/api/admin/referrals/incomplete-targets?${requestKey}`);
+      const json = await response.json();
+      if (json.success) {
+        setTargets(json.data || []);
+        setTotalTargets(json.pagination?.total_records || json.pagination?.total || 0);
+        lastFetchRef.current = requestKey;
+      } else {
+        toast.error(json.message || 'Failed to fetch incomplete targets.');
+      }
+    } catch {
+      toast.error('Error connecting to server.');
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+      if (activeFetchRef.current === requestKey) activeFetchRef.current = null;
+    }
+  }, [currentPage, itemsPerPage]);
+
+  useEffect(() => {
+    fetchTargets();
+  }, [fetchTargets]);
+
+  const tableColumns = [
+    {
+      key: 'user', label: 'User', render: (row) => (
+        <div className="flex items-center gap-2 min-w-[140px]">
+          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white shrink-0">
+            <User size={14} />
+          </div>
+          <div className="min-w-0">
+            <div className="font-semibold text-gray-800 dark:text-gray-100 text-sm whitespace-nowrap truncate">
+              {[row.first_name, row.last_name].filter(Boolean).join(' ') || row.username}
+            </div>
+            <div className="text-[11px] text-gray-500 dark:text-gray-400 whitespace-nowrap">@{row.username}</div>
+          </div>
+        </div>
+      ),
+    },
+    { key: 'email', label: 'Email', render: (row) => <span className="text-sm text-gray-600 dark:text-gray-300">{row.email || 'N/A'}</span> },
+    { key: 'mobile', label: 'Mobile', render: (row) => <span className="text-sm text-gray-600 dark:text-gray-300">{row.mobile || 'N/A'}</span> },
+    { key: 'create_date', label: 'Join Date', render: (row) => <span className="text-xs whitespace-nowrap text-gray-500 dark:text-gray-400">{formatDate(row.create_date)}</span> },
+    { key: 'status', label: 'Status', render: (row) => <StatusBadge status={row.status} /> },
+  ];
+
+  return (
+    <div className="space-y-3 mt-2">
+      {/* Loading */}
+      {loading && <PageContentSkeleton rows={6} columns={5} />}
+
+      {/* Empty state */}
+      {!loading && targets.length === 0 && (
+        <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="text-center py-16 bg-white dark:bg-gray-800 rounded-lg shadow-xl dark:shadow-gray-950/50">
+          <Users className="text-gray-300 dark:text-gray-600 mx-auto mb-4" size={64} />
+          <p className="text-xl text-gray-500 dark:text-gray-400">No incomplete targets found</p>
+        </motion.div>
+      )}
+
+      {/* Content */}
+      {!loading && targets.length > 0 && (
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="rounded-lg bg-white dark:bg-gray-800 shadow-xl dark:shadow-gray-950/50">
+          <ManagementTable
+            columns={tableColumns}
+            rows={targets}
+            rowKey="id"
+            accent="indigo"
+          />
+        </motion.div>
+      )}
+
+      {!loading && totalTargets > 0 && (
+        <PaginationComponent
+          currentPage={currentPage}
+          totalItems={totalTargets}
+          itemsPerPage={itemsPerPage}
+          onPageChange={setCurrentPage}
+          onLimitChange={(limit) => { setItemsPerPage(limit); setCurrentPage(1); }}
+          availableLimits={[10, 20, 50, 100]}
+        />
+      )}
+    </div>
+  );
+};
+
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 export default function Referrals() {
+  const [activeTab, setActiveTab] = useState('referrals');
+
+  const tabs = [
+    { id: 'referrals', label: 'Referrals', icon: Gift },
+    { id: 'incomplete', label: 'Incomplete Targets', icon: Users },
+  ];
+
   const [referrals, setReferrals] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -801,15 +920,21 @@ export default function Referrals() {
       title="Referrals Management"
       description="Track referral relationships, bonus payouts, and statuses."
       accent="indigo"
+      tabs={tabs}
+      activeTab={activeTab}
+      onTabChange={setActiveTab}
       onRefresh={handleRefresh}
       refreshing={refreshing}
       actions={
-        <Button onClick={handleCreateNew} variant="primary" className="flex items-center gap-2 text-sm py-1.5 bg-indigo-600 hover:bg-indigo-700">
-          <Plus size={16} /> <span className='hidden md:block'>Add Referral</span>
-        </Button>
+        activeTab === 'referrals' ? (
+          <Button onClick={handleCreateNew} variant="primary" className="flex items-center gap-2 text-sm py-1.5 bg-indigo-600 hover:bg-indigo-700">
+            <Plus size={16} /> <span className='hidden md:block'>Add Referral</span>
+          </Button>
+        ) : null
       }
     >
-      <div className="space-y-3 mt-2">
+      {activeTab === 'referrals' && (
+        <div className="space-y-3 mt-2">
         {/* Filters Bar */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -946,7 +1071,10 @@ export default function Referrals() {
             availableLimits={[10, 20, 50, 100]}
           />
         )}
-      </div>
+        </div>
+      )}
+
+      {activeTab === 'incomplete' && <IncompleteTargets />}
 
       {/* View Modal */}
       <AnimatePresence>
