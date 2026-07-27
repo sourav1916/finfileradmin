@@ -200,6 +200,7 @@ const ReferralFormModal = ({ referral, onClose, onSubmit, isSubmitting }) => {
   const [referrerObj, setReferrerObj] = useState(referral?.referrer || null);
   const [referredObj, setReferredObj] = useState(referral?.referred || null);
   const [offerObj, setOfferObj] = useState(null);
+  const [isOfferDetailsExpanded, setIsOfferDetailsExpanded] = useState(false);
 
   const update = (field, value) => setForm((prev) => ({ ...prev, [field]: value }));
 
@@ -310,7 +311,7 @@ const ReferralFormModal = ({ referral, onClose, onSubmit, isSubmitting }) => {
         <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 flex items-center gap-2">
           <Tag className="text-indigo-500 dark:text-indigo-400" size={15} /> Offer
         </h4>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div className="space-y-4">
           <div>
             <label className={labelClass}>Offer</label>
             <AsyncSelectField
@@ -326,6 +327,7 @@ const ReferralFormModal = ({ referral, onClose, onSubmit, isSubmitting }) => {
                   update('offer_name_snapshot', selected.offer_name || '');
                   update('referrer_bonus_type', selected.referrer_bonus_type || 'fixed');
                   update('referrer_bonus_amount', selected.referrer_bonus_value || 0);
+                  update('onwords_years_bonus_value', selected.onwords_years_bonus_value || 0);
                 }
               }}
               placeholder="Choose offer..."
@@ -338,39 +340,62 @@ const ReferralFormModal = ({ referral, onClose, onSubmit, isSubmitting }) => {
             )}
           </div>
           <div>
-            <label className={labelClass}>Referral Code Used</label>
-            <input className={inputClass} value={form.referral_code_used} onChange={(e) => update('referral_code_used', e.target.value)} placeholder="e.g. WELCOME10" />
-          </div>
-          <div>
-            <label className={labelClass}>Offer Name Snapshot</label>
-            <input className={inputClass} value={form.offer_name_snapshot} onChange={(e) => update('offer_name_snapshot', e.target.value)} placeholder="e.g. Referral Welcome Bonus" />
-          </div>
-        </div>
-      </div>
+            <button
+              type="button"
+              onClick={() => setIsOfferDetailsExpanded(!isOfferDetailsExpanded)}
+              className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 flex items-center gap-1 hover:underline outline-none"
+            >
+               {isOfferDetailsExpanded ? 'Hide Offer Details' : 'Show Editable Offer Details'}
+            </button>
+            <AnimatePresence>
+              {isOfferDetailsExpanded && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  className="overflow-hidden mt-3"
+                >
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50/50 dark:bg-gray-800/50 mb-4">
+                    <div>
+                      <label className={labelClass}>Referral Code Used</label>
+                      <input className={inputClass} value={form.referral_code_used} onChange={(e) => update('referral_code_used', e.target.value)} placeholder="e.g. WELCOME10" />
+                    </div>
+                    <div>
+                      <label className={labelClass}>Offer Name Snapshot</label>
+                      <input className={inputClass} value={form.offer_name_snapshot} onChange={(e) => update('offer_name_snapshot', e.target.value)} placeholder="e.g. Referral Welcome Bonus" />
+                    </div>
+                  </div>
 
-      <div>
-        <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 flex items-center gap-2">
-          <Gift className="text-indigo-500 dark:text-indigo-400" size={15} /> Bonus Configuration
-        </h4>
-        <div className="rounded-lg border border-gray-200 dark:border-gray-700 p-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <label className={labelClass}>Bonus Type</label>
-              <SelectField
-                value={BONUS_TYPE_OPTIONS.find((o) => o.value === form.referrer_bonus_type)}
-                onChange={(s) => update('referrer_bonus_type', s?.value || 'fixed')}
-                options={BONUS_TYPE_OPTIONS}
-                styles={filterSelectStyles}
-              />
-            </div>
-            <div>
-              <label className={labelClass}>Bonus Amount</label>
-              <input type="text" className={inputClass} value={form.referrer_bonus_amount} onChange={(e) => { if (e.target.value === '' || /^\d*\.?\d*$/.test(e.target.value)) update('referrer_bonus_amount', e.target.value); }} placeholder="0" />
-            </div>
-            <div>
-              <label className={labelClass}>Onwards Years Bonus Value</label>
-              <input type="text" className={inputClass} value={form.onwords_years_bonus_value} onChange={(e) => { if (e.target.value === '' || /^\d*\.?\d*$/.test(e.target.value)) update('onwords_years_bonus_value', e.target.value); }} placeholder="0" />
-            </div>
+                  <div>
+                    <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 flex items-center gap-2">
+                      <Gift className="text-indigo-500 dark:text-indigo-400" size={15} /> Bonus Configuration
+                    </h4>
+                    <div className="rounded-lg border border-gray-200 dark:border-gray-700 p-4">
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                          <label className={labelClass}>Bonus Type</label>
+                          <SelectField
+                            value={BONUS_TYPE_OPTIONS.find((o) => o.value === form.referrer_bonus_type)}
+                            onChange={(s) => update('referrer_bonus_type', s?.value || 'fixed')}
+                            options={BONUS_TYPE_OPTIONS}
+                            styles={filterSelectStyles}
+                          />
+                        </div>
+                        <div>
+                          <label className={labelClass}>Bonus Amount</label>
+                          <input type="text" className={inputClass} value={form.referrer_bonus_amount} onChange={(e) => { if (e.target.value === '' || /^\d*\.?\d*$/.test(e.target.value)) update('referrer_bonus_amount', e.target.value); }} placeholder="0" />
+                        </div>
+                        <div>
+                          <label className={labelClass}>Onwards Years Bonus Value</label>
+                          <input type="text" className={inputClass} value={form.onwords_years_bonus_value} onChange={(e) => { if (e.target.value === '' || /^\d*\.?\d*$/.test(e.target.value)) update('onwords_years_bonus_value', e.target.value); }} placeholder="0" />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </div>
       </div>

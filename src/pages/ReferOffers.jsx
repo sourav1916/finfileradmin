@@ -173,6 +173,7 @@ const ReferOfferFormModal = ({ offer, onClose, onSubmit, isSubmitting }) => {
     offer_name: offer?.offer_name || '',
     referrer_bonus_type: offer?.referrer_bonus_type || 'fixed',
     referrer_bonus_value: offer?.referrer_bonus_value || '',
+    onwords_years_bonus_value: offer?.onwords_years_bonus_value || '',
     targets: offer?.targets || 1,
     effective_from: formatDateForInput(offer?.effective_from),
     effective_to: formatDateForInput(offer?.effective_to),
@@ -198,6 +199,7 @@ const ReferOfferFormModal = ({ offer, onClose, onSubmit, isSubmitting }) => {
     
     // Convert numbers
     payload.referrer_bonus_value = payload.referrer_bonus_value ? Number(payload.referrer_bonus_value) : 0;
+    payload.onwords_years_bonus_value = payload.onwords_years_bonus_value ? Number(payload.onwords_years_bonus_value) : 0;
     payload.targets = payload.targets ? Number(payload.targets) : 1;
     
     // Convert empty date to null
@@ -255,7 +257,7 @@ const ReferOfferFormModal = ({ offer, onClose, onSubmit, isSubmitting }) => {
             </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2 border-t border-gray-200 dark:border-gray-700 relative z-20">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-gray-200 dark:border-gray-700 relative z-20">
             <div>
                 <label className="block text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1.5">Referrer Bonus Type</label>
                 <SelectField
@@ -268,6 +270,10 @@ const ReferOfferFormModal = ({ offer, onClose, onSubmit, isSubmitting }) => {
              <div>
                 <label className="block text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1.5">Referrer Bonus Value *</label>
                 <input type="text" required name="referrer_bonus_value" value={form.referrer_bonus_value} onChange={(e) => { if (e.target.value === '' || /^\d*\.?\d*$/.test(e.target.value)) handleChange(e); }} placeholder="0.00" className={inputCls} />
+            </div>
+             <div>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1.5">Onwards Years Bonus Value</label>
+                <input type="text" name="onwords_years_bonus_value" value={form.onwords_years_bonus_value} onChange={(e) => { if (e.target.value === '' || /^\d*\.?\d*$/.test(e.target.value)) handleChange(e); }} placeholder="0.00" className={inputCls} />
             </div>
              <div>
                 <label className="block text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1.5">Targets *</label>
@@ -510,6 +516,16 @@ export default function ReferOffers() {
             </span>
             <span className="text-sm font-bold text-gray-800 dark:text-gray-200">
                 {row.referrer_bonus_type === 'percentage' ? `${row.referrer_bonus_value}%` : `₹${row.referrer_bonus_value}`}
+            </span>
+        </div>
+    )},
+    { key: 'onwards_bonus', label: 'Onwards Bonus', render: (row) => (
+        <div className="flex items-center gap-2">
+            <span className={`flex h-7 w-7 items-center justify-center rounded-lg border ${row.referrer_bonus_type === 'percentage' ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 border-indigo-100 dark:border-indigo-800' : 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 border-emerald-100 dark:border-emerald-800'}`}>
+                {row.referrer_bonus_type === 'percentage' ? <Percent size={12} /> : <IndianRupee size={12} />}
+            </span>
+            <span className="text-sm font-bold text-gray-800 dark:text-gray-200">
+                {row.referrer_bonus_type === 'percentage' ? `${row.onwords_years_bonus_value || 0}%` : `₹${row.onwords_years_bonus_value || 0}`}
             </span>
         </div>
     )},
