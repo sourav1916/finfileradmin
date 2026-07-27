@@ -352,9 +352,8 @@ const ReferralFormModal = ({ referral, onClose, onSubmit, isSubmitting }) => {
         <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 flex items-center gap-2">
           <Gift className="text-indigo-500 dark:text-indigo-400" size={15} /> Bonus Configuration
         </h4>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="rounded-lg border border-gray-200 dark:border-gray-700 p-3 space-y-3">
-            <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Referrer</p>
+        <div className="rounded-lg border border-gray-200 dark:border-gray-700 p-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <label className={labelClass}>Bonus Type</label>
               <SelectField
@@ -366,15 +365,11 @@ const ReferralFormModal = ({ referral, onClose, onSubmit, isSubmitting }) => {
             </div>
             <div>
               <label className={labelClass}>Bonus Amount</label>
-              <input type="number" className={inputClass} value={form.referrer_bonus_amount} onChange={(e) => update('referrer_bonus_amount', e.target.value)} placeholder="0" />
+              <input type="text" className={inputClass} value={form.referrer_bonus_amount} onChange={(e) => { if (e.target.value === '' || /^\d*\.?\d*$/.test(e.target.value)) update('referrer_bonus_amount', e.target.value); }} placeholder="0" />
             </div>
-          </div>
-
-          <div className="rounded-lg border border-gray-200 dark:border-gray-700 p-3 space-y-3">
-            <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Referred User</p>
             <div>
               <label className={labelClass}>Onwards Years Bonus Value</label>
-              <input type="number" className={inputClass} value={form.onwords_years_bonus_value} onChange={(e) => update('onwords_years_bonus_value', e.target.value)} placeholder="0" />
+              <input type="text" className={inputClass} value={form.onwords_years_bonus_value} onChange={(e) => { if (e.target.value === '' || /^\d*\.?\d*$/.test(e.target.value)) update('onwords_years_bonus_value', e.target.value); }} placeholder="0" />
             </div>
           </div>
         </div>

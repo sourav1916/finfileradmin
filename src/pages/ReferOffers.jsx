@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Gift, Plus, CheckCircle, XCircle,
   Search, X, Edit, Trash2, Calendar, Eye,
-  Tag, Clock, IndianRupee, Percent
+  Tag, Clock, IndianRupee, Percent, CheckCircle2
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import ManagementHub from '../components/common/ManagementHub';
@@ -267,11 +267,11 @@ const ReferOfferFormModal = ({ offer, onClose, onSubmit, isSubmitting }) => {
             </div>
              <div>
                 <label className="block text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1.5">Referrer Bonus Value *</label>
-                <input type="number" step="0.01" min="0" required name="referrer_bonus_value" value={form.referrer_bonus_value} onChange={handleChange} placeholder="0.00" className={inputCls} />
+                <input type="text" required name="referrer_bonus_value" value={form.referrer_bonus_value} onChange={(e) => { if (e.target.value === '' || /^\d*\.?\d*$/.test(e.target.value)) handleChange(e); }} placeholder="0.00" className={inputCls} />
             </div>
              <div>
                 <label className="block text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1.5">Targets *</label>
-                <input type="number" step="1" min="1" required name="targets" value={form.targets} onChange={handleChange} placeholder="1" className={inputCls} />
+                <input type="text" required name="targets" value={form.targets} onChange={(e) => { if (e.target.value === '' || /^\d*$/.test(e.target.value)) handleChange(e); }} placeholder="1" className={inputCls} />
             </div>
         </div>
 
