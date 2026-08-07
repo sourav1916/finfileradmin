@@ -9,6 +9,7 @@ import {
   BrickWall,
   IndianRupee,
   Newspaper,
+  Images,
   ShieldCheck,
   ChartBar,
   Settings,
@@ -132,6 +133,12 @@ const Sidebar = ({
       label: "Blogs",
       path: "/blogs",
       modules: ["blog"],
+    },
+    {
+      icon: Images,
+      label: "Home Carousel",
+      path: "/home-carousel",
+      roles: ["admin", "superadmin"],
     },
     {
       icon: ShieldCheck,

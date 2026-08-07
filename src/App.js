@@ -32,6 +32,7 @@ import Profile from "./pages/Profile";
 import Documents from "./pages/Documents";
 import OrderDocumentUpload from "./pages/OrderDocumentUpload";
 import Blogs from "./pages/Blogs";
+import HomeCarousel from "./pages/HomeCarousel";
 import AccessManagement from "./pages/AccessManagement";
 import ReportsHub from "./pages/ReportsHub";
 import CAServiceFees from "./pages/CAServiceFees";
@@ -105,6 +106,7 @@ function App() {
                     <Route path="wallet" element={<PermissionRoute modules="payment"><Wallet /></PermissionRoute>} />
                     <Route path="profile" element={<Profile />} />
                     <Route path="blogs" element={<PermissionRoute modules="blog"><Blogs /></PermissionRoute>} />
+                    <Route path="home-carousel" element={<RoleRoute allowedRoles={['admin', 'superadmin']}><HomeCarousel /></RoleRoute>} />
                     <Route path="permissions" element={<PermissionRoute modules={['permissions','permission_package']}><AccessManagement /></PermissionRoute>} />
                     <Route path="permission-packages" element={<PermissionRoute modules={['permission_package','permissions']}><AccessManagement /></PermissionRoute>} />
                     <Route path="settings" element={<PermissionRoute modules={['setting']}><Settings /></PermissionRoute>} />
